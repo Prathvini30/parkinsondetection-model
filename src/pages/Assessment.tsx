@@ -2,8 +2,8 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PencilRuler, Upload, Mic, ActivitySquare, ClipboardList, Thermometer, AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import { PencilRuler, Upload, Mic, ActivitySquare, ClipboardList, Thermometer, AlertTriangle, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { CustomButton } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +11,20 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { CustomTextarea } from "@/components/ui/custom-textarea";
+import { useNavigate } from "react-router-dom";
+import { 
+  processSpiralDrawing, 
+  processVoiceRecording, 
+  processPostureImage, 
+  processSymptoms 
+} from "@/services/ml";
+import { useAssessment } from "@/context/AssessmentContext";
 
 const Assessment = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { modelsLoaded, loadingModels } = useAssessment();
+  
   const [spiralImage, setSpiralImage] = useState<string | null>(null);
   const [voiceRecording, setVoiceRecording] = useState<string | null>(null);
   const [postureImage, setPostureImage] = useState<string | null>(null);
@@ -30,6 +41,15 @@ const Assessment = () => {
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [age, setAge] = useState("");
   const [familyHistory, setFamilyHistory] = useState(false);
+  
+  const [analyzingSpiral, setAnalyzingSpiral] = useState(false);
+  const [analyzingVoice, setAnalyzingVoice] = useState(false);
+  const [analyzingPosture, setAnalyzingPosture] = useState(false);
+  const [analyzingSymptoms, setAnalyzingSymptoms] = useState(false);
+  const [spiralAnalyzed, setSpiralAnalyzed] = useState(false);
+  const [voiceAnalyzed, setVoiceAnalyzed] = useState(false);
+  const [postureAnalyzed, setPostureAnalyzed] = useState(false);
+  const [symptomsAnalyzed, setSymptomsAnalyzed] = useState(false);
 
   const handleSpiralUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -37,6 +57,7 @@ const Assessment = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSpiralImage(reader.result as string);
+        setSpiralAnalyzed(false);
       };
       reader.readAsDataURL(file);
       toast({
@@ -52,6 +73,7 @@ const Assessment = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPostureImage(reader.result as string);
+        setPostureAnalyzed(false);
       };
       reader.readAsDataURL(file);
       toast({
@@ -77,6 +99,7 @@ const Assessment = () => {
         setVoiceRecording(audioUrl);
         setAudioChunks(chunks);
         setRecordingTime(0);
+        setVoiceAnalyzed(false);
         toast({
           title: "Recording complete",
           description: "Your voice sample has been recorded successfully.",
@@ -116,11 +139,119 @@ const Assessment = () => {
     }
   };
 
-  const handleSubmit = (type: string) => {
-    toast({
-      title: `${type} assessment submitted`,
-      description: "Your data has been submitted for analysis. Results will be available soon.",
-    });
+  const analyzeSpiralDrawing = async () => {
+    if (!spiralImage || !modelsLoaded) return;
+    
+    try {
+      setAnalyzingSpiral(true);
+      const result = await processSpiralDrawing(spiralImage);
+      setSpiralAnalyzed(true);
+      
+      toast({
+        title: "Spiral Analysis Complete",
+        description: `Analysis indicates ${result.status} indicators with ${result.confidence}% confidence.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: "There was an error analyzing your spiral drawing.",
+      });
+    } finally {
+      setAnalyzingSpiral(false);
+    }
+  };
+
+  const analyzeVoiceRecording = async () => {
+    if (!voiceRecording || audioChunks.length === 0 || !modelsLoaded) return;
+    
+    try {
+      setAnalyzingVoice(true);
+      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const result = await processVoiceRecording(audioBlob);
+      setVoiceAnalyzed(true);
+      
+      toast({
+        title: "Voice Analysis Complete",
+        description: `Analysis indicates ${result.status} indicators with ${result.confidence}% confidence.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: "There was an error analyzing your voice recording.",
+      });
+    } finally {
+      setAnalyzingVoice(false);
+    }
+  };
+
+  const analyzePostureImage = async () => {
+    if (!postureImage || !modelsLoaded) return;
+    
+    try {
+      setAnalyzingPosture(true);
+      const result = await processPostureImage(postureImage);
+      setPostureAnalyzed(true);
+      
+      toast({
+        title: "Posture Analysis Complete",
+        description: `Analysis indicates ${result.status} indicators with ${result.confidence}% confidence.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: "There was an error analyzing your posture image.",
+      });
+    } finally {
+      setAnalyzingPosture(false);
+    }
+  };
+
+  const analyzeSymptomsData = async () => {
+    if (!age || !modelsLoaded) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please enter your age before submitting.",
+      });
+      return;
+    }
+    
+    try {
+      setAnalyzingSymptoms(true);
+      const symptomsData = {
+        age,
+        familyHistory,
+        tremor: tremor[0],
+        stiffness: stiffness[0],
+        balance: balance[0],
+        hasFreeze,
+        hasSleepIssues,
+        additionalNotes
+      };
+      
+      const result = await processSymptoms(symptomsData);
+      setSymptomsAnalyzed(true);
+      
+      toast({
+        title: "Symptoms Analysis Complete",
+        description: `Analysis indicates ${result.status} indicators with ${result.confidence}% confidence.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: "There was an error analyzing your symptoms data.",
+      });
+    } finally {
+      setAnalyzingSymptoms(false);
+    }
+  };
+
+  const navigateToResults = () => {
+    navigate('/results');
   };
 
   return (
@@ -132,6 +263,13 @@ const Assessment = () => {
             <p className="text-gray-500">
               Complete the assessments below to receive a comprehensive analysis of potential Parkinson's disease indicators.
             </p>
+            
+            {loadingModels && (
+              <div className="flex items-center justify-center gap-2 text-parkinsons-600">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Loading machine learning models...</span>
+              </div>
+            )}
           </div>
 
           <Tabs defaultValue="spiral" className="w-full">
@@ -191,14 +329,27 @@ const Assessment = () => {
                           <div className="flex justify-center gap-2">
                             <Button 
                               variant="outline" 
-                              onClick={() => setSpiralImage(null)}
+                              onClick={() => {
+                                setSpiralImage(null);
+                                setSpiralAnalyzed(false);
+                              }}
                             >
                               Remove
                             </Button>
                             <Button 
-                              onClick={() => handleSubmit('Spiral')}
+                              onClick={analyzeSpiralDrawing}
+                              disabled={analyzingSpiral || spiralAnalyzed || !modelsLoaded}
                             >
-                              Analyze Drawing
+                              {analyzingSpiral ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Analyzing...
+                                </>
+                              ) : spiralAnalyzed ? (
+                                "Analysis Complete"
+                              ) : (
+                                "Analyze Drawing"
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -276,9 +427,19 @@ const Assessment = () => {
                               Record Again
                             </Button>
                             <Button 
-                              onClick={() => handleSubmit('Voice')}
+                              onClick={() => analyzeVoiceRecording}
+                              disabled={analyzingVoice || voiceAnalyzed || !modelsLoaded}
                             >
-                              Analyze Voice
+                              {analyzingVoice ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Analyzing...
+                                </>
+                              ) : voiceAnalyzed ? (
+                                "Analysis Complete"
+                              ) : (
+                                "Analyze Voice"
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -336,14 +497,27 @@ const Assessment = () => {
                           <div className="flex justify-center gap-2">
                             <Button 
                               variant="outline" 
-                              onClick={() => setPostureImage(null)}
+                              onClick={() => {
+                                setPostureImage(null);
+                                setPostureAnalyzed(false);
+                              }}
                             >
                               Remove
                             </Button>
                             <Button 
-                              onClick={() => handleSubmit('Posture')}
+                              onClick={analyzePostureImage}
+                              disabled={analyzingPosture || postureAnalyzed || !modelsLoaded}
                             >
-                              Analyze Posture
+                              {analyzingPosture ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Analyzing...
+                                </>
+                              ) : postureAnalyzed ? (
+                                "Analysis Complete"
+                              ) : (
+                                "Analyze Posture"
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -508,10 +682,20 @@ const Assessment = () => {
                     
                     <div className="flex justify-center">
                       <Button 
-                        onClick={() => handleSubmit('Symptoms')}
+                        onClick={analyzeSymptomsData}
                         className="bg-parkinsons-600 hover:bg-parkinsons-700"
+                        disabled={analyzingSymptoms || symptomsAnalyzed || !modelsLoaded}
                       >
-                        Submit Symptoms Assessment
+                        {analyzingSymptoms ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : symptomsAnalyzed ? (
+                          "Analysis Complete"
+                        ) : (
+                          "Submit Symptoms Assessment"
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -524,9 +708,9 @@ const Assessment = () => {
             <CustomButton 
               variant="parkinsons"
               size="lg" 
-              asChild
+              onClick={navigateToResults}
             >
-              <a href="/results">View Results Dashboard</a>
+              View Results Dashboard
             </CustomButton>
           </div>
         </div>

@@ -19,6 +19,10 @@ export interface AssessmentData {
     imageData?: string;
     result?: AssessmentResult;
   };
+  symptoms?: {
+    data?: any;
+    result?: AssessmentResult;
+  };
   overall?: {
     score: number;
     confidence: number;
