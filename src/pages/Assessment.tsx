@@ -2,10 +2,15 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PencilRuler, Upload, Mic, ActivitySquare } from "lucide-react";
+import { PencilRuler, Upload, Mic, ActivitySquare, ClipboardList, Thermometer, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { CustomButton } from "@/components/ui/custom-button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { CustomTextarea } from "@/components/ui/custom-textarea";
 
 const Assessment = () => {
   const { toast } = useToast();
@@ -16,6 +21,15 @@ const Assessment = () => {
   const [recordingTime, setRecordingTime] = useState(0);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
+  
+  const [tremor, setTremor] = useState<number[]>([0]);
+  const [stiffness, setStiffness] = useState<number[]>([0]);
+  const [balance, setBalance] = useState<number[]>([0]);
+  const [hasFreeze, setHasFreeze] = useState(false);
+  const [hasSleepIssues, setHasSleepIssues] = useState(false);
+  const [additionalNotes, setAdditionalNotes] = useState("");
+  const [age, setAge] = useState("");
+  const [familyHistory, setFamilyHistory] = useState(false);
 
   const handleSpiralUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -121,18 +135,22 @@ const Assessment = () => {
           </div>
 
           <Tabs defaultValue="spiral" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="spiral" className="flex items-center gap-2">
                 <PencilRuler className="h-4 w-4" />
-                <span className="hidden sm:inline">Spiral Drawing</span>
+                <span className="hidden sm:inline">Spiral</span>
               </TabsTrigger>
               <TabsTrigger value="voice" className="flex items-center gap-2">
                 <Mic className="h-4 w-4" />
-                <span className="hidden sm:inline">Voice Recording</span>
+                <span className="hidden sm:inline">Voice</span>
               </TabsTrigger>
               <TabsTrigger value="posture" className="flex items-center gap-2">
                 <ActivitySquare className="h-4 w-4" />
-                <span className="hidden sm:inline">Posture Analysis</span>
+                <span className="hidden sm:inline">Posture</span>
+              </TabsTrigger>
+              <TabsTrigger value="symptoms" className="flex items-center gap-2">
+                <ClipboardList className="h-4 w-4" />
+                <span className="hidden sm:inline">Symptoms</span>
               </TabsTrigger>
             </TabsList>
 
@@ -340,6 +358,161 @@ const Assessment = () => {
                         <li>Ensure good lighting and that your whole body is visible</li>
                         <li>Upload the image using the browse button above</li>
                       </ol>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="symptoms">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Additional Symptoms Assessment</CardTitle>
+                  <CardDescription>
+                    Provide information about other symptoms you may be experiencing to improve detection accuracy.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Basic Information</h3>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="age">Age</Label>
+                        <Input 
+                          id="age" 
+                          type="number" 
+                          placeholder="Enter your age" 
+                          value={age}
+                          onChange={(e) => setAge(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          id="family-history" 
+                          checked={familyHistory}
+                          onCheckedChange={setFamilyHistory}
+                        />
+                        <Label htmlFor="family-history">Family history of Parkinson's disease</Label>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Rate your symptoms (0-10)</h3>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <Label htmlFor="tremor">Tremor Severity</Label>
+                          <span className="text-sm font-medium">{tremor[0]}</span>
+                        </div>
+                        <Slider 
+                          id="tremor"
+                          min={0} 
+                          max={10} 
+                          step={1} 
+                          value={tremor}
+                          onValueChange={setTremor}
+                          className="py-4"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>None</span>
+                          <span>Severe</span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <Label htmlFor="stiffness">Muscle Stiffness</Label>
+                          <span className="text-sm font-medium">{stiffness[0]}</span>
+                        </div>
+                        <Slider 
+                          id="stiffness"
+                          min={0} 
+                          max={10} 
+                          step={1} 
+                          value={stiffness}
+                          onValueChange={setStiffness}
+                          className="py-4"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>None</span>
+                          <span>Severe</span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <Label htmlFor="balance">Balance Problems</Label>
+                          <span className="text-sm font-medium">{balance[0]}</span>
+                        </div>
+                        <Slider 
+                          id="balance"
+                          min={0} 
+                          max={10} 
+                          step={1} 
+                          value={balance}
+                          onValueChange={setBalance}
+                          className="py-4"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>None</span>
+                          <span>Severe</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Additional Symptoms</h3>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          id="freezing" 
+                          checked={hasFreeze}
+                          onCheckedChange={setHasFreeze}
+                        />
+                        <Label htmlFor="freezing">Freezing of movement (sudden inability to move)</Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          id="sleep-issues" 
+                          checked={hasSleepIssues}
+                          onCheckedChange={setHasSleepIssues}
+                        />
+                        <Label htmlFor="sleep-issues">Sleep disturbances or REM sleep behavior disorder</Label>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="notes">Additional Notes or Symptoms</Label>
+                        <CustomTextarea 
+                          id="notes" 
+                          variant="parkinsons"
+                          placeholder="Describe any other symptoms or concerns you have..."
+                          value={additionalNotes}
+                          onChange={(e) => setAdditionalNotes(e.target.value)}
+                          rows={4}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-gray-600">
+                          This assessment tool is intended for informational purposes only and should not replace professional medical advice. 
+                          Please consult with a healthcare provider for proper diagnosis and treatment.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-center">
+                      <Button 
+                        onClick={() => handleSubmit('Symptoms')}
+                        className="bg-parkinsons-600 hover:bg-parkinsons-700"
+                      >
+                        Submit Symptoms Assessment
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
