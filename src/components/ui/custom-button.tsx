@@ -2,13 +2,14 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import React from "react";
+import { ButtonProps } from "@/components/ui/button";
 
-interface CustomButtonProps extends React.ComponentProps<typeof Button> {
+interface CustomButtonProps extends Omit<ButtonProps, 'variant'> {
   variant?: "parkinsons" | "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 }
 
 export const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
-  ({ className, variant, ...props }, ref) => {
+  ({ className, variant = "default", ...props }, ref) => {
     return (
       <Button
         ref={ref}

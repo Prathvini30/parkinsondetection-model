@@ -1,11 +1,11 @@
-
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PencilRuler, Upload, VoiceNetwork, ActivitySquare } from "lucide-react";
+import { PencilRuler, Upload, Mic, ActivitySquare } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { CustomButton } from "@/components/ui/custom-button";
 
 const Assessment = () => {
   const { toast } = useToast();
@@ -73,13 +73,11 @@ const Assessment = () => {
       recorder.start();
       setIsRecording(true);
       
-      // Start timer
       const startTime = Date.now();
       const timerInterval = setInterval(() => {
         setRecordingTime(Math.floor((Date.now() - startTime) / 1000));
       }, 1000);
       
-      // Stop recording after 10 seconds
       setTimeout(() => {
         clearInterval(timerInterval);
         recorder.stop();
@@ -105,7 +103,6 @@ const Assessment = () => {
   };
 
   const handleSubmit = (type: string) => {
-    // In a real application, this would send the data to your backend for processing
     toast({
       title: `${type} assessment submitted`,
       description: "Your data has been submitted for analysis. Results will be available soon.",
@@ -130,7 +127,7 @@ const Assessment = () => {
                 <span className="hidden sm:inline">Spiral Drawing</span>
               </TabsTrigger>
               <TabsTrigger value="voice" className="flex items-center gap-2">
-                <VoiceNetwork className="h-4 w-4" />
+                <Mic className="h-4 w-4" />
                 <span className="hidden sm:inline">Voice Recording</span>
               </TabsTrigger>
               <TabsTrigger value="posture" className="flex items-center gap-2">
@@ -139,7 +136,6 @@ const Assessment = () => {
               </TabsTrigger>
             </TabsList>
 
-            {/* Spiral Drawing Tab */}
             <TabsContent value="spiral">
               <Card>
                 <CardHeader>
@@ -205,7 +201,6 @@ const Assessment = () => {
               </Card>
             </TabsContent>
 
-            {/* Voice Recording Tab */}
             <TabsContent value="voice">
               <Card>
                 <CardHeader>
@@ -219,7 +214,7 @@ const Assessment = () => {
                     <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 border-gray-300 bg-gray-50">
                       {!voiceRecording ? (
                         <>
-                          <VoiceNetwork className="h-10 w-10 text-gray-400 mb-2" />
+                          <Mic className="h-10 w-10 text-gray-400 mb-2" />
                           <p className="text-sm text-gray-500 mb-4">Record your voice for analysis</p>
                           
                           {!isRecording ? (
@@ -286,7 +281,6 @@ const Assessment = () => {
               </Card>
             </TabsContent>
 
-            {/* Posture Analysis Tab */}
             <TabsContent value="posture">
               <Card>
                 <CardHeader>
@@ -354,13 +348,13 @@ const Assessment = () => {
           </Tabs>
 
           <div className="mt-8 text-center">
-            <Button 
-              className="bg-parkinsons-600 hover:bg-parkinsons-700"
+            <CustomButton 
+              variant="parkinsons"
               size="lg" 
               asChild
             >
               <a href="/results">View Results Dashboard</a>
-            </Button>
+            </CustomButton>
           </div>
         </div>
       </div>

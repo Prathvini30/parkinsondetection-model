@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ActivitySquare, FileBarChart, Home, Lightbulb, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { CustomButton } from "@/components/ui/custom-button";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -38,9 +39,9 @@ export function Navbar() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <Button variant="parkinsons" asChild className="hidden md:flex">
+          <CustomButton variant="parkinsons" asChild className="hidden md:flex">
             <Link to="/assessment">Start Assessment</Link>
-          </Button>
+          </CustomButton>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
@@ -58,9 +59,9 @@ export function Navbar() {
                     </Link>
                   </Button>
                 ))}
-                <Button variant="parkinsons" asChild onClick={() => setIsOpen(false)}>
+                <CustomButton variant="parkinsons" asChild onClick={() => setIsOpen(false)}>
                   <Link to="/assessment">Start Assessment</Link>
-                </Button>
+                </CustomButton>
               </div>
             </SheetContent>
           </Sheet>

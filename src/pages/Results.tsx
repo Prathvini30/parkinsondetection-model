@@ -3,9 +3,10 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { PencilRuler, ActivitySquare, Brain, VoiceNetwork, FileBarChart } from "lucide-react";
+import { PencilRuler, ActivitySquare, Brain, Mic, FileBarChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { CustomButton } from "@/components/ui/custom-button";
 
 const Results = () => {
   // Mock data for demonstration - in a real app, this would come from a backend
@@ -117,7 +118,7 @@ const Results = () => {
                 <span className="hidden sm:inline">Spiral Drawing</span>
               </TabsTrigger>
               <TabsTrigger value="voice" className="flex items-center gap-2">
-                <VoiceNetwork className="h-4 w-4" />
+                <Mic className="h-4 w-4" />
                 <span className="hidden sm:inline">Voice Analysis</span>
               </TabsTrigger>
               <TabsTrigger value="posture" className="flex items-center gap-2">

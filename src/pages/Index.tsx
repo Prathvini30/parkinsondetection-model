@@ -3,8 +3,9 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
-import { ActivitySquare, Brain, FileBarChart, MoveRight, VoiceNetwork, PencilRuler } from "lucide-react";
+import { ActivitySquare, Brain, FileBarChart, MoveRight, Mic, PencilRuler } from "lucide-react";
 import { motion } from "framer-motion";
+import { CustomButton } from "@/components/ui/custom-button";
 
 const Index = () => {
   return (
@@ -24,12 +25,12 @@ const Index = () => {
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Button variant="default" size="lg" asChild className="bg-parkinsons-600 hover:bg-parkinsons-700">
+                <CustomButton variant="parkinsons" size="lg" asChild>
                   <Link to="/assessment">
                     Start Assessment
                     <MoveRight className="ml-2 h-4 w-4" />
                   </Link>
-                </Button>
+                </CustomButton>
                 <Button variant="outline" size="lg" asChild>
                   <Link to="/resources">Learn More</Link>
                 </Button>
@@ -70,7 +71,7 @@ const Index = () => {
             {/* Feature 2 */}
             <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-parkinsons-100 text-parkinsons-600 mb-4">
-                <VoiceNetwork className="h-5 w-5" />
+                <Mic className="h-5 w-5" />
               </div>
               <h3 className="text-lg font-semibold">Voice Pattern Recognition</h3>
               <p className="text-sm text-gray-500 mt-2">
