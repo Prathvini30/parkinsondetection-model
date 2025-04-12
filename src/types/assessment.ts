@@ -29,4 +29,17 @@ export interface AssessmentData {
     status: "healthy" | "mild" | "moderate" | "severe";
     recommendation: string;
   };
+  deviceInfo?: {
+    platform: "ios" | "android" | "web";
+    model?: string;
+    osVersion?: string;
+  };
+}
+
+// Mobile device related types
+export interface MobileDeviceInfo {
+  platform: "ios" | "android" | "web";
+  model?: string;
+  osVersion?: string;
+  isNative: boolean;
 }

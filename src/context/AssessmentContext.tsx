@@ -8,6 +8,7 @@ interface AssessmentContextType {
   loadingModels: boolean;
   modelsLoaded: boolean;
   resetAssessment: () => void;
+  isMobileDevice: boolean;
 }
 
 const AssessmentContext = createContext<AssessmentContextType>({
@@ -15,6 +16,7 @@ const AssessmentContext = createContext<AssessmentContextType>({
   loadingModels: false,
   modelsLoaded: false,
   resetAssessment: () => {},
+  isMobileDevice: false,
 });
 
 export const useAssessment = () => useContext(AssessmentContext);
@@ -23,6 +25,20 @@ export const AssessmentProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [loadingModels, setLoadingModels] = useState(true);
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({});
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+
+  // Check if running on a mobile device
+  useEffect(() => {
+    const isCapacitorApp = window.location.href.includes("capacitor://") || 
+                          document.URL.startsWith('http://localhost') ||
+                          document.URL.startsWith('capacitor://');
+                          
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+    
+    setIsMobileDevice(isCapacitorApp || isMobile);
+  }, []);
 
   // Initialize ML models on component mount
   useEffect(() => {
@@ -60,6 +76,7 @@ export const AssessmentProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         loadingModels,
         modelsLoaded,
         resetAssessment,
+        isMobileDevice,
       }}
     >
       {children}
