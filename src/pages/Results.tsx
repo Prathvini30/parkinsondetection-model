@@ -3,7 +3,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { PencilRuler, ActivitySquare, Brain, Mic, FileBarChart, Loader2 } from "lucide-react";
+import { PencilRuler, ActivitySquare, Brain, Mic, FileBarChart, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, Navigate } from "react-router-dom";
 import { CustomButton } from "@/components/ui/custom-button";
@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { AssessmentResult } from "@/types/assessment";
 
 const Results = () => {
-  const { assessmentData, loadingModels } = useAssessment();
+  const { assessmentData, loadingModels, resetAssessment } = useAssessment();
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -73,18 +73,28 @@ const Results = () => {
                 <CardHeader className="bg-parkinsons-50">
                   <CardTitle className="flex items-center">
                     <FileBarChart className="mr-2 h-5 w-5 text-parkinsons-600" />
-                    Overall Assessment Summary
+                    Parkinson's Disease Analysis
                   </CardTitle>
                   <CardDescription>
-                    Comprehensive analysis based on all assessment data
+                    Machine learning analysis based on your uploaded data
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
                   {assessmentData.overall ? (
                     <>
+                      <div className="mb-6 text-center">
+                        <div className={`inline-block text-lg font-semibold rounded-full px-4 py-2 ${getStatusColor(assessmentData.overall.status)}`}>
+                          {assessmentData.overall.status === "healthy" ? (
+                            "No significant Parkinson's indicators detected"
+                          ) : (
+                            `${assessmentData.overall.status.charAt(0).toUpperCase() + assessmentData.overall.status.slice(1)} Parkinson's Disease indicators detected`
+                          )}
+                        </div>
+                      </div>
+                      
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div className="text-center p-4 border rounded-lg">
-                          <p className="text-sm text-gray-500">Overall Score</p>
+                          <p className="text-sm text-gray-500">Severity Score</p>
                           <p className="text-3xl font-bold text-parkinsons-600">{assessmentData.overall.score}/100</p>
                         </div>
                         <div className="text-center p-4 border rounded-lg">
@@ -94,7 +104,7 @@ const Results = () => {
                         <div className="text-center p-4 border rounded-lg">
                           <p className="text-sm text-gray-500">Status</p>
                           <p className={`text-lg font-semibold rounded-full px-3 py-1 inline-block ${getStatusColor(assessmentData.overall.status)}`}>
-                            {assessmentData.overall.status.charAt(0).toUpperCase() + assessmentData.overall.status.slice(1)} Risk
+                            {assessmentData.overall.status.charAt(0).toUpperCase() + assessmentData.overall.status.slice(1)}
                           </p>
                         </div>
                       </div>
@@ -102,11 +112,21 @@ const Results = () => {
                       <div className="bg-gray-50 p-4 rounded-lg mb-6">
                         <h3 className="font-medium mb-2 flex items-center">
                           <Brain className="mr-2 h-4 w-4 text-parkinsons-600" />
-                          Recommendation:
+                          Medical Recommendation:
                         </h3>
                         <p className="text-gray-600">
                           {assessmentData.overall.recommendation}
                         </p>
+                      </div>
+                      
+                      <div className="bg-amber-50 p-4 rounded-lg mb-6">
+                        <div className="flex items-start">
+                          <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5 mr-2" />
+                          <p className="text-sm text-amber-800">
+                            This assessment is based on machine learning analysis and should not be considered a medical diagnosis.
+                            Please consult with a healthcare professional for proper evaluation and diagnosis.
+                          </p>
+                        </div>
                       </div>
                     </>
                   ) : (
@@ -119,6 +139,9 @@ const Results = () => {
                     </Button>
                     <Button className="bg-parkinsons-600 hover:bg-parkinsons-700" asChild>
                       <Link to="/assessment">Take Another Assessment</Link>
+                    </Button>
+                    <Button variant="destructive" onClick={resetAssessment}>
+                      Reset Assessment
                     </Button>
                   </div>
                 </CardContent>
@@ -153,7 +176,7 @@ const Results = () => {
                     </CardHeader>
                     <CardContent>
                       {assessmentData.spiral?.result ? (
-                        <ResultContent result={assessmentData.spiral.result} type="spiral" />
+                        <ResultContent result={assessmentData.spiral.result} type="spiral" imageData={assessmentData.spiral.imageData} />
                       ) : (
                         <p className="text-center py-4">No spiral analysis data available.</p>
                       )}
@@ -172,7 +195,7 @@ const Results = () => {
                     </CardHeader>
                     <CardContent>
                       {assessmentData.voice?.result ? (
-                        <ResultContent result={assessmentData.voice.result} type="voice" />
+                        <ResultContent result={assessmentData.voice.result} type="voice" audioData={assessmentData.voice.audioData} />
                       ) : (
                         <p className="text-center py-4">No voice analysis data available.</p>
                       )}
@@ -191,7 +214,7 @@ const Results = () => {
                     </CardHeader>
                     <CardContent>
                       {assessmentData.posture?.result ? (
-                        <ResultContent result={assessmentData.posture.result} type="posture" />
+                        <ResultContent result={assessmentData.posture.result} type="posture" imageData={assessmentData.posture.imageData} />
                       ) : (
                         <p className="text-center py-4">No posture analysis data available.</p>
                       )}
@@ -219,7 +242,17 @@ const Results = () => {
 };
 
 // Component to display result content
-const ResultContent = ({ result, type }: { result: AssessmentResult, type: string }) => {
+const ResultContent = ({ 
+  result, 
+  type, 
+  imageData, 
+  audioData 
+}: { 
+  result: AssessmentResult, 
+  type: string,
+  imageData?: string,
+  audioData?: string 
+}) => {
   // Function to get status color
   const getStatusColor = (status: "healthy" | "mild" | "moderate" | "severe") => {
     switch (status) {
@@ -266,6 +299,35 @@ const ResultContent = ({ result, type }: { result: AssessmentResult, type: strin
   
   return (
     <div className="space-y-6">
+      {imageData && (
+        <div className="border rounded-md overflow-hidden">
+          <img 
+            src={imageData} 
+            alt={`${type} analysis image`} 
+            className="max-h-64 mx-auto my-4"
+          />
+        </div>
+      )}
+      
+      {audioData && (
+        <div className="border rounded-md p-4">
+          <audio controls src={audioData} className="w-full" />
+        </div>
+      )}
+      
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <h3 className="font-medium mb-2">Machine Learning Analysis</h3>
+        <div className={`rounded-md p-3 mb-4 ${getStatusColor(result.status)}`}>
+          <p className="font-medium">
+            {result.status === "healthy" ? (
+              "No significant Parkinson's indicators detected"
+            ) : (
+              `${result.status.charAt(0).toUpperCase() + result.status.slice(1)} Parkinson's Disease indicators detected`
+            )}
+          </p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <p className="text-sm font-medium mb-2">Score: {result.score}/100</p>
@@ -274,13 +336,6 @@ const ResultContent = ({ result, type }: { result: AssessmentResult, type: strin
         <div>
           <p className="text-sm font-medium mb-2">Confidence: {result.confidence}%</p>
           <Progress value={result.confidence} className="h-2" />
-        </div>
-      </div>
-
-      <div>
-        <p className="text-sm font-medium mb-2">Status:</p>
-        <div className={`rounded-md p-3 ${getStatusColor(result.status)}`}>
-          <p className="font-medium">{result.status.charAt(0).toUpperCase() + result.status.slice(1)} Indicators</p>
         </div>
       </div>
 

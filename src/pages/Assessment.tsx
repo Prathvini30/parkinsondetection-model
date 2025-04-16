@@ -1,9 +1,10 @@
+
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PencilRuler, Upload, Mic, ActivitySquare, ClipboardList, Thermometer, AlertTriangle, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { CustomButton } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,8 @@ import {
   processSymptoms 
 } from "@/services/ml";
 import { useAssessment } from "@/context/AssessmentContext";
+import { Progress } from "@/components/ui/progress";
+import { UploadHandler } from "@/components/assessment/UploadHandler";
 
 const Assessment = () => {
   const { toast } = useToast();
@@ -50,37 +53,63 @@ const Assessment = () => {
   const [voiceAnalyzed, setVoiceAnalyzed] = useState(false);
   const [postureAnalyzed, setPostureAnalyzed] = useState(false);
   const [symptomsAnalyzed, setSymptomsAnalyzed] = useState(false);
+  
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const handleSpiralUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSpiralImage(reader.result as string);
-        setSpiralAnalyzed(false);
-      };
-      reader.readAsDataURL(file);
+  const handleSpiralUpload = (file: File) => {
+    const reader = new FileReader();
+    
+    // Simulate upload progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += 10;
+      setUploadProgress(progress);
+      if (progress >= 100) clearInterval(progressInterval);
+    }, 100);
+    
+    reader.onloadend = () => {
+      setSpiralImage(reader.result as string);
+      setSpiralAnalyzed(false);
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
       toast({
         title: "Spiral image uploaded",
         description: "Your spiral drawing has been uploaded successfully.",
       });
-    }
+      
+      setTimeout(() => setUploadProgress(0), 500);
+    };
+    
+    reader.readAsDataURL(file);
   };
 
-  const handlePostureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPostureImage(reader.result as string);
-        setPostureAnalyzed(false);
-      };
-      reader.readAsDataURL(file);
+  const handlePostureUpload = (file: File) => {
+    const reader = new FileReader();
+    
+    // Simulate upload progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += 10;
+      setUploadProgress(progress);
+      if (progress >= 100) clearInterval(progressInterval);
+    }, 100);
+    
+    reader.onloadend = () => {
+      setPostureImage(reader.result as string);
+      setPostureAnalyzed(false);
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
       toast({
         title: "Posture image uploaded",
         description: "Your posture image has been uploaded successfully.",
       });
-    }
+      
+      setTimeout(() => setUploadProgress(0), 500);
+    };
+    
+    reader.readAsDataURL(file);
   };
 
   const startRecording = async () => {
@@ -304,21 +333,14 @@ const Assessment = () => {
                   <div className="space-y-4">
                     <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 border-gray-300 bg-gray-50">
                       {!spiralImage ? (
-                        <>
-                          <Upload className="h-10 w-10 text-gray-400 mb-2" />
-                          <p className="text-sm text-gray-500 mb-2">Upload a spiral drawing image</p>
-                          <p className="text-xs text-gray-400 mb-4">PNG, JPG or GIF (max. 5MB)</p>
-                          <label htmlFor="spiral-upload">
-                            <Button variant="default" className="cursor-pointer">Browse Files</Button>
-                            <input 
-                              id="spiral-upload" 
-                              type="file" 
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handleSpiralUpload}
-                            />
-                          </label>
-                        </>
+                        <UploadHandler 
+                          iconType="spiral" 
+                          title="Upload a spiral drawing image" 
+                          description="PNG, JPG or GIF (max. 5MB)"
+                          acceptTypes="image/*"
+                          onFileSelected={handleSpiralUpload}
+                          uploadProgress={uploadProgress}
+                        />
                       ) : (
                         <div className="w-full">
                           <img 
@@ -422,12 +444,15 @@ const Assessment = () => {
                           <div className="flex justify-center gap-2">
                             <Button 
                               variant="outline" 
-                              onClick={() => setVoiceRecording(null)}
+                              onClick={() => {
+                                setVoiceRecording(null);
+                                setVoiceAnalyzed(false);
+                              }}
                             >
                               Record Again
                             </Button>
                             <Button 
-                              onClick={() => analyzeVoiceRecording}
+                              onClick={analyzeVoiceRecording}
                               disabled={analyzingVoice || voiceAnalyzed || !modelsLoaded}
                             >
                               {analyzingVoice ? (
@@ -472,21 +497,14 @@ const Assessment = () => {
                   <div className="space-y-4">
                     <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 border-gray-300 bg-gray-50">
                       {!postureImage ? (
-                        <>
-                          <Upload className="h-10 w-10 text-gray-400 mb-2" />
-                          <p className="text-sm text-gray-500 mb-2">Upload a full body standing image</p>
-                          <p className="text-xs text-gray-400 mb-4">PNG, JPG or GIF (max. 5MB)</p>
-                          <label htmlFor="posture-upload">
-                            <Button variant="default" className="cursor-pointer">Browse Files</Button>
-                            <input 
-                              id="posture-upload" 
-                              type="file" 
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handlePostureUpload}
-                            />
-                          </label>
-                        </>
+                        <UploadHandler 
+                          iconType="posture" 
+                          title="Upload a full body standing image" 
+                          description="PNG, JPG or GIF (max. 5MB)"
+                          acceptTypes="image/*"
+                          onFileSelected={handlePostureUpload}
+                          uploadProgress={uploadProgress}
+                        />
                       ) : (
                         <div className="w-full">
                           <img 
