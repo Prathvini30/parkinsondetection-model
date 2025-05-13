@@ -160,7 +160,7 @@ export const UploadHandler: React.FC<UploadHandlerProps> = ({
           {enhancedAnalysis && (
             <div className="mt-4 flex items-center text-xs gap-1.5 text-parkinsons-600 bg-parkinsons-50 px-2 py-1 rounded-md">
               <Loader2 className="h-3 w-3 animate-spin" />
-              <span>High-accuracy ML models ready (>90% accuracy)</span>
+              <span>High-accuracy ML models ready ({">"}90% accuracy)</span>
             </div>
           )}
         </div>

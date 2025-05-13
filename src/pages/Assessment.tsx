@@ -1,4 +1,3 @@
-
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +25,7 @@ import { UploadHandler } from "@/components/assessment/UploadHandler";
 const Assessment = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { modelsLoaded, loadingModels } = useAssessment();
+  const { modelsLoaded, loadingModels, refreshResults } = useAssessment();
   
   const [spiralImage, setSpiralImage] = useState<string | null>(null);
   const [voiceRecording, setVoiceRecording] = useState<string | null>(null);
@@ -176,6 +175,9 @@ const Assessment = () => {
       const result = await processSpiralDrawing(spiralImage);
       setSpiralAnalyzed(true);
       
+      // Refresh assessment data after analysis
+      refreshResults();
+      
       toast({
         title: "Spiral Analysis Complete",
         description: `Analysis indicates ${result.status} indicators with ${result.confidence}% confidence.`,
@@ -200,6 +202,9 @@ const Assessment = () => {
       const result = await processVoiceRecording(audioBlob);
       setVoiceAnalyzed(true);
       
+      // Refresh assessment data after analysis
+      refreshResults();
+      
       toast({
         title: "Voice Analysis Complete",
         description: `Analysis indicates ${result.status} indicators with ${result.confidence}% confidence.`,
@@ -222,6 +227,9 @@ const Assessment = () => {
       setAnalyzingPosture(true);
       const result = await processPostureImage(postureImage);
       setPostureAnalyzed(true);
+      
+      // Refresh assessment data after analysis
+      refreshResults();
       
       toast({
         title: "Posture Analysis Complete",
@@ -264,6 +272,9 @@ const Assessment = () => {
       const result = await processSymptoms(symptomsData);
       setSymptomsAnalyzed(true);
       
+      // Refresh assessment data after analysis
+      refreshResults();
+      
       toast({
         title: "Symptoms Analysis Complete",
         description: `Analysis indicates ${result.status} indicators with ${result.confidence}% confidence.`,
@@ -280,6 +291,8 @@ const Assessment = () => {
   };
 
   const navigateToResults = () => {
+    // Refresh results one more time before navigating
+    refreshResults();
     navigate('/results');
   };
 

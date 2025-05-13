@@ -1,4 +1,3 @@
-
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,17 +11,20 @@ import { useEffect, useState } from "react";
 import { AssessmentResult } from "@/types/assessment";
 
 const Results = () => {
-  const { assessmentData, loadingModels, resetAssessment } = useAssessment();
+  const { assessmentData, loadingModels, resetAssessment, refreshResults } = useAssessment();
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    // Refresh results when the component mounts
+    refreshResults();
+    
     // Simulate loading time to fetch results
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1000);
     
     return () => clearTimeout(timer);
-  }, []);
+  }, [refreshResults]);
 
   // Function to get status color
   const getStatusColor = (status: "healthy" | "mild" | "moderate" | "severe") => {

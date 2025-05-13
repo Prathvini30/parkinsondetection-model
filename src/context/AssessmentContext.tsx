@@ -13,6 +13,7 @@ interface AssessmentContextType {
   enhancedAnalysis: boolean;
   toggleEnhancedAnalysis: () => void;
   modelLoadProgress: number;
+  refreshResults: () => void;
 }
 
 const AssessmentContext = createContext<AssessmentContextType>({
@@ -24,6 +25,7 @@ const AssessmentContext = createContext<AssessmentContextType>({
   enhancedAnalysis: true,
   toggleEnhancedAnalysis: () => {},
   modelLoadProgress: 0,
+  refreshResults: () => {},
 });
 
 export const useAssessment = () => useContext(AssessmentContext);
@@ -88,12 +90,24 @@ export const AssessmentProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
 
     loadModels();
+    
+    // Load initial assessment data
+    refreshResults();
   }, []);
+  
+  // Refresh the assessment data from the services
+  const refreshResults = () => {
+    const data = getAssessmentData();
+    console.log("Refreshing assessment data:", data);
+    setAssessmentData(data);
+  };
 
   // Update assessment data whenever it changes
   useEffect(() => {
-    const data = getAssessmentData();
-    setAssessmentData(data);
+    // This ensures we load the data once the models are ready
+    if (modelsLoaded) {
+      refreshResults();
+    }
   }, [modelsLoaded]);
   
   // Toggle enhanced analysis mode
@@ -128,6 +142,7 @@ export const AssessmentProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         enhancedAnalysis,
         toggleEnhancedAnalysis,
         modelLoadProgress,
+        refreshResults,
       }}
     >
       {children}
