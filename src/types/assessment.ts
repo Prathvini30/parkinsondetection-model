@@ -10,18 +10,22 @@ export interface AssessmentData {
   spiral?: {
     imageData: string;
     result?: AssessmentResult;
+    modelAccuracy?: number;
   };
   voice?: {
     audioData?: string;
     result?: AssessmentResult;
+    modelAccuracy?: number;
   };
   posture?: {
     imageData?: string;
     result?: AssessmentResult;
+    modelAccuracy?: number;
   };
   symptoms?: {
     data?: any;
     result?: AssessmentResult;
+    modelAccuracy?: number;
   };
   overall?: {
     score: number;
@@ -33,6 +37,11 @@ export interface AssessmentData {
     platform: "ios" | "android" | "web";
     model?: string;
     osVersion?: string;
+  };
+  modelInfo?: {
+    enhancedModelsLoaded: boolean;
+    averageAccuracy: number;
+    modelVersion: string;
   };
 }
 
