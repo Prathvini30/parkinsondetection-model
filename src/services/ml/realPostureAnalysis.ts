@@ -1,4 +1,3 @@
-
 import * as tf from '@tensorflow/tfjs';
 
 // Real posture analysis using pose estimation

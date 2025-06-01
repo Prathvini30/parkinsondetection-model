@@ -97,11 +97,11 @@ export class SpiralFeatureExtractor {
 
     // Convert raw features to clinical metrics
     return {
-      tremor: this.calculateTremorIndex([features.edges]),
-      irregularity: this.calculateIrregularityIndex([features.lineConsistency]),
-      pressure: this.calculatePressureIndex([features.pressureVariation]),
-      speed: this.calculateSpeedIndex([features.speedMetrics]),
-      smoothness: this.calculateSmoothnessIndex([features.smoothness])
+      tremor: this.calculateTremorIndex(features.edges),
+      irregularity: this.calculateIrregularityIndex(features.lineConsistency),
+      pressure: this.calculatePressureIndex(features.pressureVariation),
+      speed: this.calculateSpeedIndex(features.speedMetrics),
+      smoothness: this.calculateSmoothnessIndex(features.smoothness)
     };
   }
 
@@ -132,15 +132,15 @@ export class SpiralFeatureExtractor {
   private detectEdges(imageTensor: tf.Tensor): tf.Tensor {
     // Sobel edge detection
     const sobelX = tf.tensor4d([
-      [[-1, 0, 1],
-       [-2, 0, 2],
-       [-1, 0, 1]]
+      [[[-1, 0, 1],
+        [-2, 0, 2],
+        [-1, 0, 1]]]
     ], [1, 3, 3, 1]);
     
     const sobelY = tf.tensor4d([
-      [[-1, -2, -1],
-       [0, 0, 0],
-       [1, 2, 1]]
+      [[[-1, -2, -1],
+        [0, 0, 0],
+        [1, 2, 1]]]
     ], [1, 3, 3, 1]);
     
     const gray = imageTensor.mean(3, true);
@@ -172,39 +172,33 @@ export class SpiralFeatureExtractor {
     // Assess curve smoothness using second derivatives
     const gray = imageTensor.mean(3, true);
     const laplacian = tf.tensor4d([
-      [[0, 1, 0],
-       [1, -4, 1],
-       [0, 1, 0]]
+      [[[0, 1, 0],
+        [1, -4, 1],
+        [0, 1, 0]]]
     ], [1, 3, 3, 1]);
     
     return tf.conv2d(gray as tf.Tensor4D, laplacian, 1, 'same').abs().mean();
   }
 
   // Convert raw features to clinical indices (0-1 scale)
-  private calculateTremorIndex(edgeData: number[]): number {
-    const mean = edgeData.reduce((a, b) => a + b) / edgeData.length;
-    const variance = edgeData.reduce((a, b) => a + Math.pow(b - mean, 2)) / edgeData.length;
-    return Math.min(1, variance / 0.1); // Normalize to 0-1
+  private calculateTremorIndex(edgeData: number): number {
+    return Math.min(1, edgeData / 0.1); // Normalize to 0-1
   }
 
-  private calculateIrregularityIndex(consistencyData: number[]): number {
-    const variance = consistencyData[0];
-    return Math.min(1, variance / 0.05);
+  private calculateIrregularityIndex(consistencyData: number): number {
+    return Math.min(1, consistencyData / 0.05);
   }
 
-  private calculatePressureIndex(pressureData: number[]): number {
-    const variance = pressureData[0];
-    return Math.min(1, variance / 0.03);
+  private calculatePressureIndex(pressureData: number): number {
+    return Math.min(1, pressureData / 0.03);
   }
 
-  private calculateSpeedIndex(speedData: number[]): number {
-    const speed = speedData[0];
-    return Math.min(1, speed / 1000); // Normalize based on expected range
+  private calculateSpeedIndex(speedData: number): number {
+    return Math.min(1, speedData / 1000); // Normalize based on expected range
   }
 
-  private calculateSmoothnessIndex(smoothnessData: number[]): number {
-    const smoothness = smoothnessData[0];
-    return Math.min(1, smoothness / 0.1);
+  private calculateSmoothnessIndex(smoothnessData: number): number {
+    return Math.min(1, smoothnessData / 0.1);
   }
 
   async predict(features: any): Promise<{
