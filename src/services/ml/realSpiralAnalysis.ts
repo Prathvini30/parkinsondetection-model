@@ -85,11 +85,11 @@ export class SpiralFeatureExtractor {
       const smoothness = this.assessSmoothness(imageTensor);
       
       return {
-        edges: Array.from(edges.dataSync() as Float32Array),
-        lineConsistency: Array.from(lineConsistency.dataSync() as Float32Array),
-        pressureVariation: Array.from(pressureVariation.dataSync() as Float32Array),
-        speedMetrics: Array.from(speedMetrics.dataSync() as Float32Array),
-        smoothness: Array.from(smoothness.dataSync() as Float32Array)
+        edges: Array.from(edges.dataSync()),
+        lineConsistency: Array.from(lineConsistency.dataSync()),
+        pressureVariation: Array.from(pressureVariation.dataSync()),
+        speedMetrics: Array.from(speedMetrics.dataSync()),
+        smoothness: Array.from(smoothness.dataSync())
       };
     });
 
@@ -147,7 +147,7 @@ export class SpiralFeatureExtractor {
     const edgesX = tf.conv2d(gray as tf.Tensor4D, sobelX, 1, 'same');
     const edgesY = tf.conv2d(gray as tf.Tensor4D, sobelY, 1, 'same');
     
-    return tf.sqrt(tf.add(tf.square(edgesX), tf.square(edgesY)));
+    return tf.sqrt(tf.add(tf.square(edgesX), tf.square(edgesY))).mean();
   }
 
   private analyzeLineConsistency(imageTensor: tf.Tensor): tf.Tensor {
@@ -165,7 +165,7 @@ export class SpiralFeatureExtractor {
   private calculateSpeedMetrics(imageTensor: tf.Tensor): tf.Tensor {
     // Estimate drawing speed from line density
     const edges = this.detectEdges(imageTensor);
-    return edges.sum();
+    return edges;
   }
 
   private assessSmoothness(imageTensor: tf.Tensor): tf.Tensor {
