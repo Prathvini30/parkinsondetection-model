@@ -85,11 +85,11 @@ export class SpiralFeatureExtractor {
       const smoothness = this.assessSmoothness(imageTensor);
       
       return {
-        edges: Array.from(edges.dataSync()),
-        lineConsistency: Array.from(lineConsistency.dataSync()),
-        pressureVariation: Array.from(pressureVariation.dataSync()),
-        speedMetrics: Array.from(speedMetrics.dataSync()),
-        smoothness: Array.from(smoothness.dataSync())
+        edges: edges.dataSync()[0],
+        lineConsistency: lineConsistency.dataSync()[0],
+        pressureVariation: pressureVariation.dataSync()[0],
+        speedMetrics: speedMetrics.dataSync()[0],
+        smoothness: smoothness.dataSync()[0]
       };
     });
 
@@ -97,11 +97,11 @@ export class SpiralFeatureExtractor {
 
     // Convert raw features to clinical metrics
     return {
-      tremor: this.calculateTremorIndex(features.edges),
-      irregularity: this.calculateIrregularityIndex(features.lineConsistency),
-      pressure: this.calculatePressureIndex(features.pressureVariation),
-      speed: this.calculateSpeedIndex(features.speedMetrics),
-      smoothness: this.calculateSmoothnessIndex(features.smoothness)
+      tremor: this.calculateTremorIndex([features.edges]),
+      irregularity: this.calculateIrregularityIndex([features.lineConsistency]),
+      pressure: this.calculatePressureIndex([features.pressureVariation]),
+      speed: this.calculateSpeedIndex([features.speedMetrics]),
+      smoothness: this.calculateSmoothnessIndex([features.smoothness])
     };
   }
 
