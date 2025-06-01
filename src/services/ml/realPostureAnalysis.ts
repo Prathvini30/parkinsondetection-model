@@ -1,3 +1,4 @@
+
 import * as tf from '@tensorflow/tfjs';
 
 // Real posture analysis using pose estimation
@@ -37,7 +38,7 @@ export class PostureFeatureExtractor {
         tf.layers.conv2d({ filters: 64, kernelSize: 3, activation: 'relu' }),
         tf.layers.maxPooling2d({ poolSize: 2 }),
         tf.layers.conv2d({ filters: 128, kernelSize: 3, activation: 'relu' }),
-        tf.layers.globalAveragePooling2d(),
+        tf.layers.flatten(),
         tf.layers.dense({ units: 64, activation: 'relu' }),
         tf.layers.dense({ units: 4, activation: 'softmax' })
       ]
