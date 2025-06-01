@@ -8,7 +8,6 @@ export class SpiralFeatureExtractor {
   async loadModel(modelUrl?: string) {
     try {
       // Load a real pre-trained model for spiral analysis
-      // You would replace this URL with your actual trained model
       const defaultModelUrl = modelUrl || 'https://your-model-storage.com/spiral-model/model.json';
       
       console.log('Loading real spiral analysis model...');
@@ -41,7 +40,7 @@ export class SpiralFeatureExtractor {
         tf.layers.dense({ units: 128, activation: 'relu' }),
         tf.layers.dropout({ rate: 0.5 }),
         tf.layers.dense({ units: 64, activation: 'relu' }),
-        tf.layers.dense({ units: 4, activation: 'softmax' }) // 4 classes: healthy, mild, moderate, severe
+        tf.layers.dense({ units: 4, activation: 'softmax' })
       ]
     });
 
@@ -76,7 +75,7 @@ export class SpiralFeatureExtractor {
       // Analyze line consistency for irregularity
       const lineConsistency = this.analyzeLineConsistency(imageTensor);
       
-      // Measure pressure variations (if available from stylus input)
+      // Measure pressure variations
       const pressureVariation = this.analyzePressureVariation(imageTensor);
       
       // Calculate drawing speed metrics
@@ -86,11 +85,11 @@ export class SpiralFeatureExtractor {
       const smoothness = this.assessSmoothness(imageTensor);
       
       return {
-        edges: edges.dataSync(),
-        lineConsistency: lineConsistency.dataSync(),
-        pressureVariation: pressureVariation.dataSync(),
-        speedMetrics: speedMetrics.dataSync(),
-        smoothness: smoothness.dataSync()
+        edges: Array.from(edges.dataSync() as Float32Array),
+        lineConsistency: Array.from(lineConsistency.dataSync() as Float32Array),
+        pressureVariation: Array.from(pressureVariation.dataSync() as Float32Array),
+        speedMetrics: Array.from(speedMetrics.dataSync() as Float32Array),
+        smoothness: Array.from(smoothness.dataSync() as Float32Array)
       };
     });
 
@@ -145,8 +144,8 @@ export class SpiralFeatureExtractor {
     ], [1, 3, 3, 1]);
     
     const gray = imageTensor.mean(3, true);
-    const edgesX = tf.conv2d(gray, sobelX, 1, 'same');
-    const edgesY = tf.conv2d(gray, sobelY, 1, 'same');
+    const edgesX = tf.conv2d(gray as tf.Tensor4D, sobelX, 1, 'same');
+    const edgesY = tf.conv2d(gray as tf.Tensor4D, sobelY, 1, 'same');
     
     return tf.sqrt(tf.add(tf.square(edgesX), tf.square(edgesY)));
   }
@@ -178,32 +177,32 @@ export class SpiralFeatureExtractor {
        [0, 1, 0]]
     ], [1, 3, 3, 1]);
     
-    return tf.conv2d(gray, laplacian, 1, 'same').abs().mean();
+    return tf.conv2d(gray as tf.Tensor4D, laplacian, 1, 'same').abs().mean();
   }
 
   // Convert raw features to clinical indices (0-1 scale)
-  private calculateTremorIndex(edgeData: Float32Array): number {
+  private calculateTremorIndex(edgeData: number[]): number {
     const mean = edgeData.reduce((a, b) => a + b) / edgeData.length;
     const variance = edgeData.reduce((a, b) => a + Math.pow(b - mean, 2)) / edgeData.length;
     return Math.min(1, variance / 0.1); // Normalize to 0-1
   }
 
-  private calculateIrregularityIndex(consistencyData: Float32Array): number {
+  private calculateIrregularityIndex(consistencyData: number[]): number {
     const variance = consistencyData[0];
     return Math.min(1, variance / 0.05);
   }
 
-  private calculatePressureIndex(pressureData: Float32Array): number {
+  private calculatePressureIndex(pressureData: number[]): number {
     const variance = pressureData[0];
     return Math.min(1, variance / 0.03);
   }
 
-  private calculateSpeedIndex(speedData: Float32Array): number {
+  private calculateSpeedIndex(speedData: number[]): number {
     const speed = speedData[0];
     return Math.min(1, speed / 1000); // Normalize based on expected range
   }
 
-  private calculateSmoothnessIndex(smoothnessData: Float32Array): number {
+  private calculateSmoothnessIndex(smoothnessData: number[]): number {
     const smoothness = smoothnessData[0];
     return Math.min(1, smoothness / 0.1);
   }

@@ -11,16 +11,19 @@ export interface AssessmentData {
     imageData: string;
     result?: AssessmentResult;
     modelAccuracy?: number;
+    features?: any; // Add features property
   };
   voice?: {
     audioData?: string;
     result?: AssessmentResult;
     modelAccuracy?: number;
+    features?: any; // Add features property
   };
   posture?: {
     imageData?: string;
     result?: AssessmentResult;
     modelAccuracy?: number;
+    features?: any; // Add features property
   };
   symptoms?: {
     data?: any;

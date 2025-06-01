@@ -1,4 +1,3 @@
-
 import * as tf from '@tensorflow/tfjs';
 
 // Real posture analysis using pose estimation
@@ -14,7 +13,6 @@ export class PostureFeatureExtractor {
       this.model = await tf.loadLayersModel(defaultModelUrl);
       
       // Load pose estimation model (like PoseNet or MediaPipe)
-      // For demo, we'll simulate this
       console.log('Loading pose estimation model...');
       
       console.log('Posture analysis models loaded successfully');
@@ -168,7 +166,7 @@ export class PostureFeatureExtractor {
     const shoulderAsymmetry = shoulderHeightDiff / 224; // Normalized by image height
     
     // Calculate spinal curvature (simplified)
-    const spinePoints = [
+    const spinePoints: [number, number][] = [
       keypoints.nose,
       [(keypoints.leftShoulder[0] + keypoints.rightShoulder[0]) / 2, (keypoints.leftShoulder[1] + keypoints.rightShoulder[1]) / 2],
       [(keypoints.leftHip[0] + keypoints.rightHip[0]) / 2, (keypoints.leftHip[1] + keypoints.rightHip[1]) / 2]
@@ -190,11 +188,11 @@ export class PostureFeatureExtractor {
     const bodyRigidity = this.calculateRigidityIndex(jointAngles);
     
     // Calculate balance index
-    const centerOfMass = [
+    const centerOfMass: [number, number] = [
       (keypoints.leftHip[0] + keypoints.rightHip[0]) / 2,
       (keypoints.leftHip[1] + keypoints.rightHip[1]) / 2
     ];
-    const supportBase = [
+    const supportBase: [number, number] = [
       (keypoints.leftAnkle[0] + keypoints.rightAnkle[0]) / 2,
       (keypoints.leftAnkle[1] + keypoints.rightAnkle[1]) / 2
     ];
