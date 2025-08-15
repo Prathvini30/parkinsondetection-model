@@ -68,51 +68,44 @@ export function calculateOverallAssessment(assessments: {
   posture?: any;
   symptoms?: any;
 }) {
-  // Count how many assessments were performed
-  let count = 0;
-  let totalScore = 0;
-  let totalConfidence = 0;
+  const availableAssessments = [];
   
-  // Calculate weighted average of scores and confidence
-  if (assessments.spiral) {
-    totalScore += assessments.spiral.score * 0.25;
-    totalConfidence += assessments.spiral.confidence * 0.25;
-    count++;
-  }
-  
-  if (assessments.voice) {
-    totalScore += assessments.voice.score * 0.25;
-    totalConfidence += assessments.voice.confidence * 0.25;
-    count++;
-  }
-  
-  if (assessments.posture) {
-    totalScore += assessments.posture.score * 0.2;
-    totalConfidence += assessments.posture.confidence * 0.2;
-    count++;
-  }
-  
-  if (assessments.symptoms) {
-    totalScore += assessments.symptoms.score * 0.3;
-    totalConfidence += assessments.symptoms.confidence * 0.3;
-    count++;
-  }
+  if (assessments.spiral) availableAssessments.push(assessments.spiral);
+  if (assessments.voice) availableAssessments.push(assessments.voice);
+  if (assessments.posture) availableAssessments.push(assessments.posture);
+  if (assessments.symptoms) availableAssessments.push(assessments.symptoms);
   
   // If no assessments were performed, return null
-  if (count === 0) {
+  if (availableAssessments.length === 0) {
     return null;
   }
   
-  // Calculate final score and confidence
-  const score = Math.round(totalScore);
-  const confidence = Math.round(totalConfidence);
+  // Calculate simple average of available assessments
+  const totalScore = availableAssessments.reduce((sum, assessment) => sum + assessment.score, 0);
+  const totalConfidence = availableAssessments.reduce((sum, assessment) => sum + assessment.confidence, 0);
   
-  // Determine status based on score
+  const score = Math.round(totalScore / availableAssessments.length);
+  const confidence = Math.round(totalConfidence / availableAssessments.length);
+  
+  // Determine status based on score using SAME logic as individual assessments
   let status: "healthy" | "mild" | "moderate" | "severe";
   if (score >= 80) status = "healthy";
-  else if (score >= 60) status = "mild";
-  else if (score >= 40) status = "moderate";
+  else if (score >= 65) status = "mild";      // Adjusted threshold
+  else if (score >= 45) status = "moderate";   // Adjusted threshold  
   else status = "severe";
+  
+  // Check if any individual assessment shows concerning results
+  // If any assessment is moderate/severe, overall should reflect that
+  const worstStatus = availableAssessments.reduce((worst, assessment) => {
+    const statusOrder = { healthy: 0, mild: 1, moderate: 2, severe: 3 };
+    return statusOrder[assessment.status] > statusOrder[worst] ? assessment.status : worst;
+  }, "healthy");
+  
+  // Use the worse of calculated status or individual worst status
+  const statusOrder = { healthy: 0, mild: 1, moderate: 2, severe: 3 };
+  if (statusOrder[worstStatus] > statusOrder[status]) {
+    status = worstStatus;
+  }
   
   // Generate recommendation based on status
   let recommendation = "";
