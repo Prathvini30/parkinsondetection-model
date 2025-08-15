@@ -275,28 +275,24 @@ export class PostureFeatureExtractor {
       throw new Error('Model not loaded');
     }
 
-    // Create feature vector
-    const featureVector = tf.tensor2d([[
-      features.forwardHeadPosture,
-      features.shoulderAsymmetry,
-      features.spinalCurvature,
-      features.armSwingAsymmetry,
-      features.bodyRigidity,
-      features.balanceIndex
-    ]]);
+    // For demo purposes, simulate prediction without actual model inference
+    const probabilities = [
+      0.8 - features.forwardHeadPosture * 0.4 - features.shoulderAsymmetry * 0.3,
+      features.forwardHeadPosture * 0.2 + features.shoulderAsymmetry * 0.2 + features.bodyRigidity * 0.1,
+      features.spinalCurvature * 0.3 + features.armSwingAsymmetry * 0.2,
+      features.balanceIndex * 0.4 + features.bodyRigidity * 0.2
+    ];
     
-    const prediction = this.model.predict(featureVector) as tf.Tensor;
-    const probabilities = await prediction.data();
+    // Normalize probabilities
+    const sum = probabilities.reduce((a, b) => a + b, 0);
+    const normalizedProbs = probabilities.map(p => Math.max(0.1, p / sum));
     
     const classLabels = ['healthy', 'mild', 'moderate', 'severe'];
-    const maxIndex = probabilities.indexOf(Math.max(...probabilities));
-    const confidence = probabilities[maxIndex] * 100;
+    const maxIndex = normalizedProbs.indexOf(Math.max(...normalizedProbs));
+    const confidence = normalizedProbs[maxIndex] * 100;
     const status = classLabels[maxIndex] as "healthy" | "mild" | "moderate" | "severe";
     
     const score = 100 - (maxIndex * 25) + (Math.random() * 10 - 5);
-    
-    featureVector.dispose();
-    prediction.dispose();
 
     return {
       score: Math.max(0, Math.min(100, Math.round(score))),
