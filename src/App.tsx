@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Assessment from "./pages/Assessment";
 import Results from "./pages/Results";
 import Resources from "./pages/Resources";
+import Training from "./pages/Training";
 import NotFound from "./pages/NotFound";
 import { AssessmentProvider } from "./context/AssessmentContext";
 
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/assessment" element={<Assessment />} />
             <Route path="/results" element={<Results />} />
             <Route path="/resources" element={<Resources />} />
+            <Route path="/training" element={<Training />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

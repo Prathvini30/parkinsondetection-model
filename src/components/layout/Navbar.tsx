@@ -2,7 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ActivitySquare, FileBarChart, Home, Lightbulb, Menu, X } from "lucide-react";
+import { ActivitySquare, FileBarChart, Home, Lightbulb, Menu, X, Brain } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { CustomButton } from "@/components/ui/custom-button";
@@ -15,6 +15,7 @@ export function Navbar() {
     { title: "Assessment", href: "/assessment", icon: <ActivitySquare className="mr-2 h-4 w-4" /> },
     { title: "Results", href: "/results", icon: <FileBarChart className="mr-2 h-4 w-4" /> },
     { title: "Resources", href: "/resources", icon: <Lightbulb className="mr-2 h-4 w-4" /> },
+    { title: "Training", href: "/training", icon: <Brain className="mr-2 h-4 w-4" /> },
   ];
 
   return (
