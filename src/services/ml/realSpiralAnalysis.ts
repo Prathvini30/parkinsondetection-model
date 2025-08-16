@@ -203,15 +203,23 @@ export class SpiralFeatureExtractor {
   }
 
   private detectEdges(imageTensor: tf.Tensor): tf.Tensor {
-    // Simplified edge detection using gradients
-    const gray = imageTensor.mean(3, true);
-    
-    // Use tf.grad for edge detection instead of manual convolution
-    const gradX = tf.grad((x: tf.Tensor) => x.sum())(gray);
-    const gradY = tf.grad((x: tf.Tensor) => x.sum())(gray);
-    
-    const edges = tf.sqrt(tf.add(tf.square(gradX), tf.square(gradY)));
-    
+    // Edge detection using Sobel filters for sensitivity
+    const gray = imageTensor.mean(3, true) as tf.Tensor4D;
+
+    const sobelX = tf.tensor4d([-1, 0, 1, -2, 0, 2, -1, 0, 1], [3, 3, 1, 1]);
+    const sobelY = tf.tensor4d([-1, -2, -1, 0, 0, 0, 1, 2, 1], [3, 3, 1, 1]);
+
+    const gx = tf.conv2d(gray, sobelX, [1, 1], 'same');
+    const gy = tf.conv2d(gray, sobelY, [1, 1], 'same');
+
+    const edges = tf.sqrt(tf.add(tf.square(gx), tf.square(gy)));
+
+    // Clean up intermediate tensors
+    sobelX.dispose();
+    sobelY.dispose();
+    gx.dispose();
+    gy.dispose();
+
     return edges.mean();
   }
 
